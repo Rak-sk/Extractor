@@ -18,7 +18,7 @@ namespace extract
         template <Extract Type, class... Ts>
         size_t test_for(Ts... args) const;
 
-        template <struct Type, class... Ts>
+        template <class Type, class... Ts>
         size_t test_for(Ts... args) const
         {
             return test_for<Type::type, Ts...>(std::forward<Ts>(args)...);

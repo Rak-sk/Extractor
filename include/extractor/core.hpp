@@ -19,7 +19,15 @@ namespace extract
 
     enum class Extract
     {
-        whitespace
+        whitespace,
+        blank,
+        digit,
+        ascii_letter,
+        ascii_small,
+        ascii_capital,
+        special,
+        ascii_control,
+        ascii
     };
 
     template <Extract Type>
@@ -55,6 +63,6 @@ namespace extract
         }
     };
 
-} // namespace extractor
+} // namespace extract
 
 #endif
