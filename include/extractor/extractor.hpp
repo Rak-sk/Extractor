@@ -18,12 +18,12 @@ namespace extract
         }
 
         template <Extract Type>
-        size_t test_for(int offset = 0) const;
+        size_t test_for(size_t offset = 0) const;
 
-        size_t test_for(TestFor* modifier, int offset = 0) const;
+        size_t test_for(TestFor* modifier, size_t offset = 0) const;
 
-        //template <Extract Type>
-        //size_t test_for(size_t from, size_t until) const;
+        // template <Extract Type>
+        // size_t test_for(size_t from, size_t until) const;
 
         /**
          * @brief
@@ -34,15 +34,15 @@ namespace extract
          * @return size_t
          */
         template <class Modifier>
-        inline auto test_for(int offset = 0) const
+        inline auto test_for(size_t offset = 0) const
             -> typename std::enable_if<
                 std::is_same<
                     decltype(Modifier::test_for(this, offset)),
                     size_t>::value,
                 size_t>::type
-                
+
         {
-            return Modifier::test_for(this, std::forward<int>(offset));
+            return Modifier::test_for(this, offset);
         }
 
         template <char Character>
@@ -57,10 +57,10 @@ namespace extract
             return test_for<Character>() && test_for<Characters...>();
         }
 
-        template <Extract Type, class... Ts>
-        bool get_chars(View* view, Ts... args)
+        template <Extract Type>
+        bool get_chars(View* view)
         {
-            size_t size = test_for<Type, Ts...>(std::forward<Ts>(args)...);
+            size_t size = test_for<Type>();
             if (size == 0)
                 return false;
             *view = View { text + index, size };

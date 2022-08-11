@@ -24,7 +24,8 @@ namespace extract
         ascii_capital,
         special,
         ascii_control,
-        ascii
+        ascii,
+        null
     };
 
     template <Extract Type>
@@ -52,6 +53,7 @@ namespace extract
         {
             return first + size;
         }
+
     };
 
 } // namespace extract

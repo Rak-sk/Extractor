@@ -11,7 +11,7 @@ namespace extract
         friend Extractor;
 
     protected:
-        virtual size_t check(const Extractor*, int offset) = 0;
+        virtual size_t check(const Extractor*, size_t offset) = 0;
 
     public:
         virtual ~TestFor() = default;

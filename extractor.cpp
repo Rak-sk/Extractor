@@ -24,14 +24,12 @@ void extract::Checker::get_chars(char array[], size_t size) const
 
 #pragma region Checker
 
-#include "include/extractor/testfor.hpp"
 #include "include/extractor/extractor.hpp"
+#include "include/extractor/testfor.hpp"
 
-size_t extract::Extractor::test_for(TestFor* modifier, int offset) const
+size_t extract::Extractor::test_for(TestFor* modifier, size_t offset) const
 {
     return modifier->check(this, offset);
 }
 
 #pragma endregion Checker
-
-

@@ -9,7 +9,7 @@
 namespace extract
 {
     template <>
-    size_t Extractor::test_for<Extract::whitespace>(int offset) const
+    size_t Extractor::test_for<Extract::whitespace>(size_t offset) const
     {
         switch (get_char(offset)) {
         case ' ':
@@ -22,7 +22,13 @@ namespace extract
     }
 
     template <>
-    size_t Extractor::test_for<Extract::blank>(int offset) const
+    size_t Extractor::test_for<Extract::null>(size_t offset) const
+    {
+        return check_char(offset, '\0');
+    }
+
+    template <>
+    size_t Extractor::test_for<Extract::blank>(size_t offset) const
     {
         switch (get_char(offset)) {
         case ' ':
@@ -34,7 +40,7 @@ namespace extract
     }
 
     template <>
-    size_t Extractor::test_for<Extract::digit>(int offset) const
+    size_t Extractor::test_for<Extract::digit>(size_t offset) const
     {
         switch (get_char(offset)) {
         case '0':
@@ -54,28 +60,28 @@ namespace extract
     }
 
     template <>
-    size_t Extractor::test_for<Extract::ascii_small>(int offset) const
+    size_t Extractor::test_for<Extract::ascii_small>(size_t offset) const
     {
         char c = get_char(offset);
         return 'a' <= c && c <= 'z';
     }
 
     template <>
-    size_t Extractor::test_for<Extract::ascii_capital>(int offset) const
+    size_t Extractor::test_for<Extract::ascii_capital>(size_t offset) const
     {
         char c = get_char(offset);
         return 'A' <= c && c <= 'Z';
     }
 
     template <>
-    size_t Extractor::test_for<Extract::ascii_letter>(int offset) const
+    size_t Extractor::test_for<Extract::ascii_letter>(size_t offset) const
     {
         return test_for<Extract::ascii_small>(offset)
             || test_for<Extract::ascii_capital>(offset);
     }
 
     template <>
-    size_t Extractor::test_for<Extract::special>(int offset) const
+    size_t Extractor::test_for<Extract::special>(size_t offset) const
     {
         unsigned char c = get_char(offset);
         return 32 <= c && c <= 47
@@ -85,7 +91,7 @@ namespace extract
     }
 
     template <>
-    size_t Extractor::test_for<Extract::ascii_control>(int offset) const
+    size_t Extractor::test_for<Extract::ascii_control>(size_t offset) const
     {
         unsigned char c = get_char(offset);
         return c == 127
@@ -93,7 +99,7 @@ namespace extract
     }
 
     template <>
-    size_t Extractor::test_for<Extract::ascii>(int offset) const
+    size_t Extractor::test_for<Extract::ascii>(size_t offset) const
     {
         unsigned char c = get_char(offset);
         return c <= 127;
@@ -110,20 +116,20 @@ namespace extract
 namespace extract
 {
     template <Extract Type>
-    struct One 
+    struct One
     {
         static constexpr Extract mode = Type;
 
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             return extractor->test_for<mode>(offset);
         }
     };
 
-    template <Extract Type, Extract...Types>
-    struct Any 
+    template <Extract Type, Extract... Types>
+    struct Any
     {
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             size_t result = One<Type>::test_for(extractor, offset);
             return result != 0 ? result : Any<Types...>::test_for(extractor, offset);
@@ -133,7 +139,7 @@ namespace extract
     template <Extract Type>
     struct Any<Type>
     {
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             return One<Type>::test_for(extractor, offset);
         }

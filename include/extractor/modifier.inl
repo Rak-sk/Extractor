@@ -22,7 +22,7 @@ namespace extract
 
     template <class ModifierEnd,
         bool IncludeEnd = false,
-        typename     = void>
+        typename        = void>
     struct Until;
 
 #pragma endregion Modifiers
@@ -46,14 +46,13 @@ namespace extract
         using modifier                = Modifier;
         static constexpr size_t count = Count;
 
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
-            size_t result = 0;
-            size_t temp_result;
-            for (size_t i = 0; i < count; i++) {
-                temp_result = extractor->test_for<Modifier>(i + offset + result);
+            size_t result = 0, end = extractor->remaining(), temp_result;
+            for (size_t i = 0; i < count && result < end; i++) {
+                temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {
-                    return 0;
+                    return result;
                 }
                 result += temp_result;
             }
@@ -74,15 +73,15 @@ namespace extract
         static constexpr size_t minimum = MinCount;
         static constexpr size_t count   = MaxCount - MinCount;
 
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             size_t result = More<Modifier, MinCount>::test_for(extractor, offset);
             if (result == 0) {
                 return 0;
             }
-            size_t temp_result;
-            for (size_t i = 0; i < count; i++) {
-                temp_result = extractor->test_for<Modifier>(i + offset + result);
+            size_t temp_result, end = extractor->remaining();
+            for (size_t i = 0; i < count && result < end; i++) {
+                temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {
                     return result;
                 }
@@ -102,7 +101,7 @@ namespace extract
         using until_modifier           = ModifierEnd;
         static constexpr bool skip_end = true;
 
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             size_t result = 0, end = extractor->remaining(), temp_result;
             for (int i = offset; i < end; i++) {
@@ -125,7 +124,7 @@ namespace extract
         using until_modifier           = ModifierEnd;
         static constexpr bool skip_end = true;
 
-        inline static size_t test_for(const Extractor* extractor, int offset)
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
             size_t result = 0, end = extractor->remaining(), temp_result;
             for (int i = offset; i < end; i++) {

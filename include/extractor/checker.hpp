@@ -24,9 +24,10 @@ namespace extract
          * @return true
          * @return false
          */
-        inline bool check_char(int offset, char character) const
+        inline bool check_char(size_t offset, char character) const
         {
-            return (index < -offset || index + offset >= size) ? false : text[index + offset];
+            offset += index;
+            return offset >= size ? false : text[offset];
         }
 
         inline void move()
@@ -54,13 +55,14 @@ namespace extract
         /**
          * @brief Gets character from string. If character is not present
          * returns null ('\0').
-         * 
+         *
          * @param offset added to current position
-         * @return char 
+         * @return char
          */
-        inline char get_char(int offset) const
+        inline char get_char(size_t offset) const
         {
-            return (index < -offset || index + offset >= size) ? '\0' : text[index + offset];
+            offset += index;
+            return offset >= size ? '\0' : text[offset];
         }
 
         void get_chars(char array[], size_t size) const;
