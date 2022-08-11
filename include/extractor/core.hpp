@@ -14,9 +14,6 @@ namespace extract
 
     class Getter;
 
-    template <class INTR>
-    class Command;
-
     enum class Extract
     {
         whitespace,
@@ -31,16 +28,10 @@ namespace extract
     };
 
     template <Extract Type>
-    struct One
-    {
-        using type = Type;
-    };
+    struct One;
 
-    template <Extract Type>
+    template <Extract Type, Extract...Types>
     struct Any;
-
-    template <Extract Type>
-    struct Plus;
 
     struct View
     {
