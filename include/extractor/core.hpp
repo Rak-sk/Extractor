@@ -39,6 +39,10 @@ namespace extract
         const char*  first;
         const size_t size;
 
+        inline void operator=(const View& view)
+        {
+        }
+
         inline char operator[](size_t index) const
         {
             return (index < size) ? first[index] : '\0';
@@ -53,9 +57,21 @@ namespace extract
         {
             return first + size;
         }
-
     };
 
 } // namespace extract
+
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+#    include <string_view>
+namespace extract
+{
+    using string_view = std::string_view;
+}
+#else
+namespace extract
+{
+    using string_view = View;
+}
+#endif
 
 #endif
