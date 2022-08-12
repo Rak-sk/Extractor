@@ -14,6 +14,9 @@ namespace extract
 
     class Getter;
 
+    template<class Modifier, typename = void>
+    class Command;
+
     enum class Extract
     {
         whitespace,
