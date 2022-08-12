@@ -67,6 +67,14 @@ namespace extract
 
         void get_chars(char array[], size_t size) const;
 
+        string_view get_chars(size_t count, size_t offset = 0) const
+        {
+            offset += index;
+            if (offset >= size) 
+                return { nullptr, 0 };
+            return { text + offset, count + offset > size ? size - offset : count };
+        }
+
         size_t length() const
         {
             return size;

@@ -10,7 +10,7 @@
 
 static constexpr auto endl = '\n';
 
-decltype(std::cout)& operator<<(decltype(std::cout)& out, extract::View view)
+decltype(std::cout)& operator<<(decltype(std::cout)& out, extract::string_view view)
 {
     for (char c : view)
         out << c;

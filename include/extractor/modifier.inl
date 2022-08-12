@@ -25,13 +25,18 @@ namespace extract
         typename        = void>
     struct Until;
 
+    template <class Modifier1,
+        class Modifier2,
+        typename = void>
+    struct And;
+
 #pragma endregion Modifiers
 
 #pragma region ModifiersImpl
 
     template <typename Type>
     using is_modifier = std::is_same<
-        decltype(Extractor("").test_for<Type>(int())),
+        decltype(Extractor("").test_for<Type>(size_t())),
         size_t>;
 
     template <class Modifier, size_t Count>
@@ -137,7 +142,45 @@ namespace extract
         }
     };
 
+    template <class Modifier1, class Modifier2>
+    struct And<Modifier1,
+        Modifier2,
+        typename std::enable_if<
+            is_modifier<Modifier1>::value
+            && is_modifier<Modifier2>::value>::type>
+    {
+        using first_modifier  = Modifier1;
+        using second_modifier = Modifier2;
+
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
+        {
+            size_t result1 = extractor->test_for<Modifier1>();
+            if (result1 == 0)
+                return 0;
+            size_t result2 = extractor->test_for<Modifier2>();
+            if (result2 == 0)
+                return 0;
+            return result1 + result2;
+        }
+    };
+
 #pragma endregion ModifiersImpl
+
+#pragma region Unions
+
+    template <class Modfier, size_t count1, size_t count2>
+    struct Union<More<Modfier, count1>, More<Modfier, count2>>
+    {
+        using join = More<Modfier, count1 + count2>;
+    };
+
+    template <class Modfier, size_t min1, size_t max1, size_t min2, size_t max2>
+    struct Union<FromTo<Modfier, min1, max1>, FromTo<Modfier, min2, max2>>
+    {
+        using join = FromTo<Modfier, min1 + min2, max1 + max2>;
+    };
+
+#pragma endregion Unions
 
 } // namespace extract
 

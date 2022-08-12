@@ -8,8 +8,12 @@
 namespace extract
 {
 
-    template <class Modifier, std::enable_if_t<std::is_same<decltype(Extractor("").test_for<Modifier>(int())), size_t>::value, bool> = true>
-    class Command : public TestFor
+    template <class Modifier>
+    class Command<Modifier,
+        typename std::enable_if<
+            std::is_same<
+                decltype(Extractor("").test_for<Modifier>()), size_t>::value>::type>
+        : public TestFor
     {
 
     protected:
@@ -24,8 +28,17 @@ namespace extract
             return Modifier::test_for(extractor, offset);
         }
 
+        inline size_t get_chars(const Extractor* extractor, size_t offset)
+        {
+            return extractor->get_chars<Modifier>(view, offset);
+        }
+
         ~Command() override = default;
+
+        string_view view;
     };
+
+    
 
 } // namespace extract
 

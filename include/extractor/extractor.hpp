@@ -11,25 +11,56 @@ namespace extract
 
     class Extractor : public Checker
     {
+
     public:
+        // template<class Modifier, typename = void> friend class Command;
+
         Extractor(const char* text)
             : Checker(text)
         {
         }
 
+        size_t test_for(TestFor* checker, size_t offset = 0) const;
+
+        size_t get_chars(Getter* getter, size_t offset = 0) const;
+
+        size_t get_chars(TestFor* checker, string_view& view, size_t offset = 0) const;
+
+        bool get_chars_move(Getter* getter)
+        {
+            size_t size = get_chars(getter);
+            index += size;
+            return size;
+        }
+
+        bool get_chars_move(TestFor* checker, string_view& view)
+        {
+            size_t size = get_chars(checker, view);
+            index += size;
+            return size;
+        }
+
         template <Extract Type>
         size_t test_for(size_t offset = 0) const;
 
-        size_t test_for(TestFor* modifier, size_t offset = 0) const;
+        template <char Character>
+        inline bool test_for() const
+        {
+            return Character == get_char();
+        }
 
-        // template <Extract Type>
-        // size_t test_for(size_t from, size_t until) const;
+        template <char Character, char... Characters>
+        inline bool test_for() const
+        {
+            return test_for<Character>() && test_for<Characters...>();
+        }
 
         /**
          * @brief
          *
-         * @tparam Modifier - struct which has method
-         * with exact signature "public: static size_t test_for(const Extractor*, int)""
+         * @tparam Modifier type which has method
+         * with exact signature "public: static size_t test_for(const
+         * Extractor*, size_t)""
          * @param offset offset from current position
          * @return size_t
          */
@@ -45,27 +76,76 @@ namespace extract
             return Modifier::test_for(this, offset);
         }
 
-        template <char Character>
-        inline bool test_for() const
+        template <class Modifier>
+        auto get_chars(string_view& view, size_t offset = 0) const
+            -> typename std::enable_if<
+                std::is_same<
+                    decltype(test_for<Modifier>(offset)),
+                    size_t>::value,
+                size_t>::type
         {
-            return Character == get_char();
+            size_t size = test_for<Modifier>();
+            if (size != 0)
+                view = string_view { text + index, size };
+            return size;
         }
 
-        template <char Character, char... Characters>
-        inline bool test_for() const
+        template <class Modifier>
+        auto get_chars_move(string_view& view)
+            -> typename std::enable_if<
+                std::is_same<
+                    decltype(get_chars<Modifier>(view)),
+                    size_t>::value,
+                bool>::type
         {
-            return test_for<Character>() && test_for<Characters...>();
+            size_t size = get_chars<Modifier>(view);
+            index += size;
+            return size;
+        }
+
+        template <class Getter>
+        inline auto get_chars(Getter& getter, size_t offset = 0) const
+            -> typename std::enable_if<
+                std::is_same<
+                    decltype(Getter().get_chars(
+                        (const Extractor*)this,
+                        offset)),
+                    size_t>::value,
+                size_t>::type
+
+        {
+            return getter.get_chars(this, offset);
+        }
+
+        template <class Getter>
+        inline auto get_chars_move(Getter& getter)
+            -> typename std::enable_if<
+                std::is_same<
+                    decltype(get_chars(getter)),
+                    size_t>::value,
+                bool>::type
+
+        {
+            size_t size = get_chars(getter);
+            index += size;
+            return size;
         }
 
         template <Extract Type>
-        bool get_chars(View* view)
+        bool get_chars(string_view& view, size_t offset = 0) const
         {
-            size_t size = test_for<Type>();
-            if (size == 0)
-                return false;
-            *view = View { text + index, size };
+            size_t size = test_for<Type>(offset);
+            if (size != 0)
+                view = string_view { text + index, size };
+            return size;
+        }
+
+        template <Extract Type>
+        bool get_chars_move(string_view& view)
+        {
+            size_t size = get_chars<Type>(view);
             index += size;
-            return true;
+            return size;
         }
     };
 } // namespace extract
