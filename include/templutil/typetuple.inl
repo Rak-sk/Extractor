@@ -1,8 +1,6 @@
 #ifndef TEMPLUTIL_TYPETUPLE_INL
 #define TEMPLUTIL_TYPETUPLE_INL
 
-#define TEMPLUTIL_DEBUG_MODE
-
 #include <cstddef>
 #include <type_traits>
 
@@ -11,7 +9,7 @@
 #    include <typeinfo>
 #endif
 
-namespace extract
+namespace templ
 {
 
     template <class Type1, class Type2>
@@ -22,6 +20,18 @@ namespace extract
 
     namespace detail
     {
+#ifdef TEMPLUTIL_DEBUG_MODE
+        template <class Type>
+        struct TypeName
+        {
+
+            constexpr static const char* get()
+            {
+                return typeid(Type).name();
+            };
+        };
+#endif
+
         template <class Type1, class Type2>
         inline auto check_union()
             -> decltype((void)reinterpret_cast<
@@ -64,7 +74,7 @@ namespace extract
         template <size_t index, class Type, class... Types>
         struct GetType
         {
-            using type = GetType<index - 1, Types...>::type;
+            using type = typename GetType<index - 1, Types...>::type;
         };
 
         template <class Type, class... Types>
@@ -94,58 +104,40 @@ namespace extract
             static constexpr size_t count = 1 + CountTypes<Types...>::count;
         };
 
-        template <size_t Count, class... Types>
+        template <size_t Count, class Type, class... Types>
         struct Split;
 
-        template <class Type>
-        const char* get_type_name()
-        {
 #ifdef TEMPLUTIL_DEBUG_MODE
-            return typeid(Type).name();
-#else
-            return "";
-#endif
-        };
-#ifdef TEMPLUTIL_DEBUG_MODE
-        template<class Type, class... Types>
+        template <class Type, class... Types>
         struct StringName
         {
-            static std::string str = std::string(get_type_name<Type>()) + ", " + StringName<Types...>::str;
+            std::string str = std::string(TypeName<Type>::get())
+                + ", "
+                + StringName<Types...>().str;
         };
 
-        template<class Type>
-        struct StringName
+        template <class Type>
+        struct StringName<Type>
         {
-            static std::string = get_type_name<Type>();
+            std::string str = TypeName<Type>::get();
         };
 #endif
         template <class... Types>
-        struct TypeTuple
+        class TypeTuple
         {
 
-#ifdef TEMPLUTIL_DEBUG_MODE    
+            template <class TypeTuple>
+            struct Concat;
+
+        public:
+#ifdef TEMPLUTIL_DEBUG_MODE
             static std::string to_string()
             {
                 std::string result = "(";
-                result += StringName<Types...>::str;
+                result += StringName<Types...>().str;
                 return result + ")";
             }
 #endif
-
-            template <class TypeTuple>
-            struct Concentrate;
-
-            template <>
-            struct Concentrate<TypeTuple<>>
-            {
-                using type_tuple = TypeTuple<Types...>;
-            };
-
-            template <class... TupleTypes>
-            struct Concentrate<TypeTuple<TupleTypes...>>
-            {
-                using type_tuple = TypeTuple<Types..., TupleTypes...>;
-            };
 
             static constexpr size_t count = CountTypes<Types...>::count;
 
@@ -153,28 +145,90 @@ namespace extract
             using get_type = typename GetType<index, Types...>::type;
 
             template <class TypeTuple>
-            using concat = typename Concentrate<TypeTuple>::type_tuple;
+            using concat = typename Concat<TypeTuple>::type_tuple;
 
+            template <class... AddTypes>
+            using add = concat<TypeTuple<AddTypes...>>;
 
+            template <size_t count>
+            using split = Split<count, Types...>;
+
+            template <size_t index>
+            using remove = typename split<index>::new_tuple::template concat<typename split<index + 1>::remaining>;
+
+            template <size_t index, class TypeTuple>
+            using insertt = typename split<index>::new_tuple::template concat<TypeTuple>::template concat<typename split<index>::remaining>;
+
+            template <size_t index, class... InsertTypes>
+            using insert = insertt<index, TypeTuple<InsertTypes...>>;
+        };
+
+        template <template <class...> class Type, class... Types>
+        struct Dump<Type<Types...>>
+        {
+            using type_tuple = TypeTuple<Types...>;
+        };
+
+        template <class Type, class... Types>
+        struct Split<0, Type, Types...>
+        {
+            using new_tuple = TypeTuple<>;
+            using remaining = TypeTuple<Type, Types...>;
+        };
+
+        template <class Type, class... Types>
+        struct Split<1, Type, Types...>
+        {
+            using new_tuple = TypeTuple<Type>;
+            using remaining = TypeTuple<Types...>;
         };
 
         template <class... Types>
+        template <class... TupleTypes>
+        struct TypeTuple<Types...>::Concat<TypeTuple<TupleTypes...>>
+        {
+            using type_tuple = TypeTuple<Types..., TupleTypes...>;
+        };
+
+        template <size_t count, class Type, class... Types>
+        struct Split
+        {
+            using _smaller  = Split<count - 1, Types...>;
+            using _tuple1   = TypeTuple<Type>;
+            using _tuple2   = typename _smaller::new_tuple;
+            using new_tuple = typename _tuple1::template concat<_tuple2>;
+            using remaining = typename _smaller::remaining;
+        };
+
+        template <size_t index, class... Types>
+        struct Remove
+        {
+            //using _tuple1    = typename ;
+            //using _tuple2    = typename ;
+            
+        };
+
+        /*template <class... Types>
         struct Split<0, Types...>
         {
             using pack1 = TypeTuple<>;
             using pack2 = TypeTuple<Types...>;
         };
 
-        template <size_t Count, class Type, class... Types>
-        struct Split<Count, Type, Types...>
+        template <class Type, class... Types>
+        struct Split<1, Type, Types...>
         {
-            static_assert(Count <= CountTypes<Types...>::count, "Out of range");
-
-            using next_split = Split<Count - 1, Types...>;
-            using pack1      = TypeTuple<Type>::concat<
-                next_split::pack1>;
-            using pack2 = next_split;
+            using pack1 = TypeTuple<Type>;
+            using pack2 = TypeTuple<Types...>;
         };
+
+        template <size_t Count, class... Types>
+        struct Split
+        {
+            using remove = Split<1, Types...>;
+            // using pack1  = remove::pack1::concat<>;
+            using pack2  = Dump < ;
+        };*/
 
         template <>
         struct TypeTuple<>
@@ -188,12 +242,6 @@ namespace extract
 
             template <class TypeTuple>
             using concat = TypeTuple;
-        };
-
-        template <template <class...> class Type, class... Types>
-        struct Dump<Type<Types...>>
-        {
-            using type_tuple = TypeTuple<Types...>;
         };
 
     }; // namespace detail
@@ -212,6 +260,6 @@ namespace extract
     template <class Type1, class Type2>
     using joinbi = typename UnionBi<Type1, Type2>::join;
 
-} // namespace extract
+} // namespace templ
 
 #endif
