@@ -3,4 +3,4 @@ Extractor library is currently sharing place with Templutil, small metaprogramin
 
 * TypeTuple and TypeName are the main objects which should one day be visible to ordinary user
 
-NOTICE: templates were only compiled with GCC compiler for Windows and do not have to work with others
+NOTICE: templates were only tested with GCC compiler for Windows and do not have to work with others
