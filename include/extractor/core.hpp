@@ -14,7 +14,7 @@ namespace extract
 
     class Getter;
 
-    template<class Modifier, typename = void>
+    template <class Modifier, typename = void>
     class Command;
 
     enum class Extract
@@ -34,12 +34,70 @@ namespace extract
     template <Extract Type>
     struct One;
 
-    template <Extract Type, Extract...Types>
+    template <Extract Type, Extract... Types>
     struct Any;
 
-    template<class Type1, class Type2, typename = void>
+    template <class Type1, class Type2>
     struct Union;
 
+    template <class Type1, class Type2, typename = void>
+    struct UnionBi;
+
+    namespace detail
+    {
+        template <class Type1, class Type2>
+        inline auto check_union()
+            -> decltype((void)reinterpret_cast<
+                typename Union<Type1,
+                    Type2>::join*>((void*)0));
+
+        template <class Type1, class Type2, typename = void>
+        struct UnionBi;
+
+        template <class Type>
+        struct UnionBi<Type,
+            Type,
+            decltype(detail::check_union<Type, Type>())>
+            : public Union<Type, Type>
+        {
+        };
+
+        template <class Type1, class Type2>
+        struct UnionBi<Type1,
+            Type2,
+            decltype(detail::check_union<Type1, Type2>())>
+            : public Union<Type1, Type2>
+        {
+        };
+
+        template <class Type1, class Type2, typename>
+        struct UnionBi : public Union<Type2, Type1>
+        {
+        };
+
+        template <class Type1, class Type2>
+        inline auto check_unionbi()
+            -> decltype((void)reinterpret_cast<
+                typename UnionBi<Type1,
+                    Type2>::join*>((void*)0));
+    
+    } // namespace detail
+
+    template <class Type1, class Type2>
+    struct UnionBi<Type1,
+        Type2,
+        decltype(detail::check_unionbi<Type1, Type2>())>
+        : public detail::UnionBi<Type1, Type2>
+    {
+    };
+
+    template <class Type1, class Type2>
+    using join = typename Union<Type1, Type2>::join;
+
+    template <class Type1, class Type2>
+    using joinbi = typename UnionBi<Type1, Type2>::join;
+    
+    
     struct View
     {
         const char*  first;
