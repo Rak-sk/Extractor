@@ -8,5 +8,5 @@ The Extractor is currently in need of Extract type (variables which can be check
 * chech modifier.inl for complex Modifiers
 
 # Goal
-The main object of Extractor library is to help you find and extract specific variavles from a text using as many templates and metaprogramming as possible to make your release version faster. However it also contains bindings to runtime.
+The main object of Extractor library is to help you find and extract specific variables from a text using as many templates and metaprogramming as possible to make your release version faster. However it also contains bindings to runtime.
 
