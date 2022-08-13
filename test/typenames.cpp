@@ -3,8 +3,17 @@
 
 using namespace templ::detail;
 
-int main(int argc, char const *argv[])
+auto endl = '\n';
+
+int main(int argc, char const* argv[])
 {
-    std::cout << TypeName<TypeTuple<char, short, int, long>::insert<3, float, double>>::get();
+    std::cout
+        << TypeName<TypeTuple<char, short, int, long>::insert<3, float, double>>::get()
+        << endl
+
+        << TypeName<TypeTuple<float*, TypeTuple<char, TypeTuple<TypeTuple<int>>, long>, TypeTuple<const char, const int>, double*>::dumpallrec>::get()
+        << endl
+
+        ; // ! End !
     return 0;
 }

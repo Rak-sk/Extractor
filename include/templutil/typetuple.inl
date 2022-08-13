@@ -29,6 +29,21 @@ namespace templ
         template <class Type>
         struct Dump;
 
+        template <class Type, typename = void>
+        struct DumpSafe;
+
+        template <class Type, typename = void>
+        struct DumpSafeRecursive;
+
+        template <class Tuple, template <class...> class Dumper = DumpSafe, size_t Last = Tuple::count - 1>
+        struct DumpAll;
+
+        template <class... Types>
+        struct CountTypes;
+
+        template <size_t Count, class Type, class... Types>
+        struct Split;
+
         template <size_t index, class Type, class... Types>
         struct GetType
         {
@@ -40,9 +55,6 @@ namespace templ
         {
             using type = Type;
         };
-
-        template <class... Types>
-        struct CountTypes;
 
         template <>
         struct CountTypes<>
@@ -61,9 +73,6 @@ namespace templ
         {
             static constexpr size_t count = 1 + CountTypes<Types...>::count;
         };
-
-        template <size_t Count, class Type, class... Types>
-        struct Split;
 
 #ifdef TEMPLUTIL_DEBUG_MODE
         template <class Type, class... Types>
@@ -100,7 +109,7 @@ namespace templ
             static constexpr size_t count = CountTypes<Types...>::count;
 
             template <size_t index>
-            using get_type = typename GetType<index, Types...>::type;
+            using gettype = typename GetType<index, Types...>::type;
 
             template <class TypeTuple>
             using concat = typename Concat<TypeTuple>::type_tuple;
@@ -119,12 +128,71 @@ namespace templ
 
             template <size_t index, class... InsertTypes>
             using insert = insertt<index, TypeTuple<InsertTypes...>>;
+
+            template <size_t index, template <class...> class Dumper = Dump>
+            using dump = typename split<index>::new_tuple::template concat<typename Dumper<gettype<index>>::type_tuple>::template concat<typename split<index + 1>::remaining>;
+
+            template <size_t index>
+            using dumpsafe = dump<index, DumpSafe>;
+            
+            template <size_t index>
+            using dumprec = dump<index, DumpSafeRecursive>;
+
+            template <template <class...> class Dumper>
+            using foreachdump = typename DumpAll<TypeTuple<Types...>, Dumper>::new_tuple;
+
+            using dumpall = foreachdump<DumpSafe>;
+
+            using dumpallrec = foreachdump<DumpSafeRecursive>;
+
         };
 
         template <template <class...> class Type, class... Types>
         struct Dump<Type<Types...>>
         {
             using type_tuple = TypeTuple<Types...>;
+        };
+
+        template <class Type>
+        auto check_dump()
+            -> decltype((void)reinterpret_cast<typename Dump<Type>::type_tuple*>((void*)0));
+
+        template <class Type>
+        struct DumpSafe<Type,
+            decltype(check_dump<Type>())>
+        {
+            using type_tuple = typename Dump<Type>::type_tuple;
+        };
+
+        template <class Type, typename>
+        struct DumpSafe
+        {
+            using type_tuple = TypeTuple<Type>;
+        };
+
+        template <class Type>
+        struct DumpSafeRecursive<Type,
+            decltype(check_dump<Type>())>
+        {
+            using type_tuple = typename Dump<Type>::type_tuple::template foreachdump<DumpSafeRecursive>;
+        };
+
+        template <class Type, typename>
+        struct DumpSafeRecursive
+        {
+            using type_tuple = TypeTuple<Type>;
+        };
+
+        template <class Tuple, template <class...> class Dumper>
+        struct DumpAll<Tuple, Dumper, 0>
+        {
+            using new_tuple = typename DumpSafe<typename Tuple::template gettype<0>>::type_tuple;
+        };
+
+        template <class Tuple, template <class...> class Dumper, size_t Last>
+        struct DumpAll
+        {
+            using new_tuple = typename DumpAll<Tuple, Dumper, Last - 1>::new_tuple::template concat<typename Dumper<typename Tuple::template gettype<Last>>::type_tuple>;
         };
 
         template <class Type, class... Types>
