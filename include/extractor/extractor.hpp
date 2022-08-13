@@ -22,11 +22,8 @@ namespace extract
 
         size_t test_for(TestFor* modifier, size_t offset = 0) const;
 
-        // template <Extract Type>
-        // size_t test_for(size_t from, size_t until) const;
-
         /**
-         * @brief
+         * @brief Test if special pattern or variable is in teh text.
          *
          * @tparam Modifier - struct which has method
          * with exact signature "public: static size_t test_for(const Extractor*, int)""
@@ -45,20 +42,43 @@ namespace extract
             return Modifier::test_for(this, offset);
         }
 
+        /**
+         * @brief Checks if character is present at current position.
+         *
+         * @tparam Character chracter to check for
+         * @return true
+         * @return false
+         */
         template <char Character>
         inline bool test_for() const
         {
             return Character == get_char();
         }
 
+        /**
+         * @brief Checks if any of the present can be found at current position.
+         *
+         * @tparam Characters chracters to check for
+         * @return true
+         * @return false
+         */
         template <char Character, char... Characters>
         inline bool test_for() const
         {
             return test_for<Character>() && test_for<Characters...>();
         }
 
+        /**
+         * @brief Gets a character or charcters from text
+         * specified by the extract type and moves.
+         *
+         * @tparam Type
+         * @param view reference where the result should be stored
+         * @return true
+         * @return false
+         */
         template <Extract Type>
-        bool get_chars(View* view)
+        bool get_chars(View& view)
         {
             size_t size = test_for<Type>();
             if (size == 0)
