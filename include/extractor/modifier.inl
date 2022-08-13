@@ -1,3 +1,20 @@
+/**
+ * @file modifier.inl
+ * @author your name (you@domain.com)
+ * 
+ * @brief File with various patterns which can be checked 
+ * for in extractor object. These are usualy more complex than
+ * the ones in instruction.inl as thay may take another modifier with
+ * its own specific pattern as template argument.
+ * 
+ * 
+ * @version 0.1
+ * @date 2022-08-13
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef EXTRACTOR_MODIFIER_INL
 #define EXTRACTOR_MODIFIER_INL
 
