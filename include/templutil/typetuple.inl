@@ -12,12 +12,6 @@
 namespace templ
 {
 
-    template <class Type1, class Type2>
-    struct Union;
-
-    template <class Type1, class Type2, typename = void>
-    struct UnionBi;
-
     namespace detail
     {
 #ifdef TEMPLUTIL_DEBUG_MODE
@@ -31,42 +25,6 @@ namespace templ
             };
         };
 #endif
-
-        template <class Type1, class Type2>
-        inline auto check_union()
-            -> decltype((void)reinterpret_cast<
-                typename Union<Type1,
-                    Type2>::join*>((void*)0));
-
-        template <class Type1, class Type2, typename = void>
-        struct UnionBi;
-
-        template <class Type>
-        struct UnionBi<Type,
-            Type,
-            decltype(detail::check_union<Type, Type>())>
-            : public Union<Type, Type>
-        {
-        };
-
-        template <class Type1, class Type2>
-        struct UnionBi<Type1,
-            Type2,
-            decltype(detail::check_union<Type1, Type2>())>
-            : public Union<Type1, Type2>
-        {
-        };
-
-        template <class Type1, class Type2, typename>
-        struct UnionBi : public Union<Type2, Type1>
-        {
-        };
-
-        template <class Type1, class Type2>
-        inline auto check_unionbi()
-            -> decltype((void)reinterpret_cast<
-                typename UnionBi<Type1,
-                    Type2>::join*>((void*)0));
 
         template <class Type>
         struct Dump;
@@ -200,36 +158,6 @@ namespace templ
             using remaining = typename _smaller::remaining;
         };
 
-        template <size_t index, class... Types>
-        struct Remove
-        {
-            //using _tuple1    = typename ;
-            //using _tuple2    = typename ;
-            
-        };
-
-        /*template <class... Types>
-        struct Split<0, Types...>
-        {
-            using pack1 = TypeTuple<>;
-            using pack2 = TypeTuple<Types...>;
-        };
-
-        template <class Type, class... Types>
-        struct Split<1, Type, Types...>
-        {
-            using pack1 = TypeTuple<Type>;
-            using pack2 = TypeTuple<Types...>;
-        };
-
-        template <size_t Count, class... Types>
-        struct Split
-        {
-            using remove = Split<1, Types...>;
-            // using pack1  = remove::pack1::concat<>;
-            using pack2  = Dump < ;
-        };*/
-
         template <>
         struct TypeTuple<>
         {
@@ -245,20 +173,6 @@ namespace templ
         };
 
     }; // namespace detail
-
-    template <class Type1, class Type2>
-    struct UnionBi<Type1,
-        Type2,
-        decltype(detail::check_unionbi<Type1, Type2>())>
-        : public detail::UnionBi<Type1, Type2>
-    {
-    };
-
-    template <class Type1, class Type2>
-    using join = typename Union<Type1, Type2>::join;
-
-    template <class Type1, class Type2>
-    using joinbi = typename UnionBi<Type1, Type2>::join;
 
 } // namespace templ
 
