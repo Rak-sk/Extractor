@@ -83,7 +83,7 @@ namespace extract
             size_t size = test_for<Type>();
             if (size == 0)
                 return false;
-            *view = View { text + index, size };
+            view = View { text + index, size };
             index += size;
             return true;
         }
