@@ -37,6 +37,9 @@ namespace extract
     template <Extract Type, Extract...Types>
     struct Any;
 
+    template<class Type1, class Type2, typename = void>
+    struct Union;
+
     struct View
     {
         const char*  first;
