@@ -65,11 +65,11 @@ namespace extract
 
         inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
-            size_t result = 0, end = extractor->remaining(), temp_result;
+            size_t result = 0, end = extractor->remaining() - offset, temp_result;
             for (size_t i = 0; i < count && result < end; i++) {
                 temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {
-                    return result;
+                    return 0;
                 }
                 result += temp_result;
             }
@@ -96,7 +96,7 @@ namespace extract
             if (result == 0) {
                 return 0;
             }
-            size_t temp_result, end = extractor->remaining();
+            size_t temp_result, end = extractor->remaining() - offset;
             for (size_t i = 0; i < count && result < end; i++) {
                 temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {
