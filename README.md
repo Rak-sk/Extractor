@@ -1,8 +1,8 @@
 # Extractor
-Library which helps you extract variables from text
+Library which helps you extract variables from text.
 
 # Help
-The Extractor is currently in need of Extract type (variables which can be checked in extractor) and Modifier (Addon patterns which augment Extractor's abilities) implemetention
+The Extractor is currently in need of Extract type (variables which can be checked in extractor) and Modifier (Addon patterns which augment Extractor's abilities) implemetentions.
 
 * check instruction.inl for Extract types and small Modifiers
 * chech modifier.inl for complex Modifiers
