@@ -41,7 +41,7 @@ namespace extract
     };
 
     /**
-     * @brief Checks if one of the present are in the string
+     * @brief Checks if one of the present is in the string
      */
     template <Extract Type>
     struct One;
