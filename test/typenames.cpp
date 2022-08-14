@@ -5,6 +5,15 @@ using namespace templ::detail;
 
 auto endl = '\n';
 
+template<size_t, class Type>
+struct Consumer
+{
+    static void call()
+    {
+        std::cout << TypeName<Type>::get() << endl;
+    };
+};
+
 int main(int argc, char const* argv[])
 {
     std::cout
@@ -15,5 +24,7 @@ int main(int argc, char const* argv[])
         << endl
 
         ; // ! End !
+    
+    templ::TypeTuple<char, short, int, long>::foreach<Consumer>();
     return 0;
 }

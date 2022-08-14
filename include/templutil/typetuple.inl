@@ -14,17 +14,14 @@ namespace templ
 
     namespace detail
     {
-#ifdef TEMPLUTIL_DEBUG_MODE
         template <class Type>
         struct TypeName
         {
-
             constexpr static const char* get()
             {
                 return typeid(Type).name();
             };
         };
-#endif
 
         template <class Type>
         struct Dump;
@@ -37,6 +34,9 @@ namespace templ
 
         template <class Tuple, template <class...> class Dumper = DumpSafe, size_t Last = Tuple::count - 1>
         struct DumpAll;
+
+        template <class Tuple, template <size_t, class...> class Consumer, size_t Last = Tuple::count - 1>
+        struct ForEach;
 
         template <size_t Count, class Type, class... Types>
         struct Split;
@@ -63,9 +63,8 @@ namespace templ
         };
 
         template <size_t index, class Type, class... Types>
-        struct GetType
+        struct GetType : public GetType<index - 1, Types...>
         {
-            using type = typename GetType<index - 1, Types...>::type;
         };
 
         template <class Type, class... Types>
@@ -150,16 +149,23 @@ namespace templ
         template <size_t index>
         using dumprec = dump<index, detail::DumpSafeRecursive>;
 
-        template <template <class...> class Dumper>
-        using foreachdump = typename detail::DumpAll<
+        template <template <class...> class Dumper, template<class, template <class...> class, size_t> class DumperAll = detail::DumpAll>
+        using foreachdump = typename DumperAll<
             TypeTuple<Types...>,
-            Dumper>::new_tuple;
+            Dumper,
+            count - 1>::new_tuple;
 
         template <typename = void>
         using dumpall = foreachdump<detail::DumpSafe>;
 
         template <typename = void>
         using dumpallrec = foreachdump<detail::DumpSafeRecursive>;
+
+        template <template <size_t, class...> class Consumer>
+        static void foreach ()
+        {
+            detail::ForEach<TypeTuple<Types...>, Consumer>();
+        }
     };
 
     template <class... Types>
@@ -188,6 +194,23 @@ namespace templ
 
     namespace detail
     {
+        template <class Tuple, template <size_t, class...> class Consumer>
+        struct ForEach<Tuple, Consumer, 0>
+        {
+            ForEach()
+            {
+                Consumer<0, typename Tuple::template gettype<0>>::call();
+            }
+        };
+
+        template <class Tuple, template <size_t, class...> class Consumer, size_t Last>
+        struct ForEach : public ForEach<Tuple, Consumer, Last - 1>
+        {
+            ForEach()
+            {
+                Consumer<Last, typename Tuple::template gettype<Last>>::call();
+            }
+        };
 
         template <template <class...> class Type, class... Types>
         struct Dump<Type<Types...>>
@@ -233,7 +256,7 @@ namespace templ
         template <class Tuple, template <class...> class Dumper>
         struct DumpAll<Tuple, Dumper, 0>
         {
-            using new_tuple = typename DumpSafe<
+            using new_tuple = typename Dumper<
                 typename Tuple::template gettype<0>>::type_tuple;
         };
 
@@ -247,6 +270,32 @@ namespace templ
                     typename Dumper<
                         typename Tuple::template gettype<
                             Last>>::type_tuple>;
+        };
+
+        template <class Tuple, template <class...> class Dumper, size_t Last>
+        struct DumpAllTwo;
+
+        template <class Tuple, template <class...> class Dumper>
+        struct DumpAllTwo<Tuple, Dumper, 0>
+        {
+            using new_tuple = TypeTuple<typename Tuple::template gettype<0>>;
+        };
+
+        template <class Tuple, template <class...> class Dumper, size_t Last>
+        struct DumpAllTwo
+        {
+            using _smaller =
+                typename DumpAllTwo<Tuple, Dumper, Last - 1>::new_tuple;
+            using new_tuple =
+                typename _smaller::
+                    template remove<
+                        _smaller::count - 1>::
+                        template concat
+                < typename Dumper<
+                    typename _smaller::
+                        template gettype<_smaller::count - 1>,
+                    typename Tuple::
+                        template gettype<Last>>::type_tuple>;
         };
 
         template <class Type, class... Types>
