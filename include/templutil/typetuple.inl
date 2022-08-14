@@ -89,110 +89,161 @@ namespace templ
             std::string str = TypeName<Type>::get();
         };
 #endif
-        template <class... Types>
-        class TypeTuple
-        {
+    }; // namespace detail
 
-            template <class TypeTuple>
-            struct Concat;
+    template <class... Types>
+    class TypeTuple
+    {
 
-        public:
+        template <class TypeTuple>
+        struct Concat;
+
+    public:
 #ifdef TEMPLUTIL_DEBUG_MODE
-            static std::string to_string()
-            {
-                std::string result = "(";
-                result += StringName<Types...>().str;
-                return result + ")";
-            }
+        static std::string to_string()
+        {
+            std::string result = "(";
+            result += detail::StringName<Types...>().str;
+            return result + ")";
+        }
 #endif
 
-            static constexpr size_t count = CountTypes<Types...>::count;
+        static constexpr size_t count = detail::CountTypes<Types...>::count;
 
-            template <size_t index>
-            using gettype = typename GetType<index, Types...>::type;
+        template <size_t index>
+        using gettype = typename detail::GetType<index, Types...>::type;
 
-            template <class TypeTuple>
-            using concat = typename Concat<TypeTuple>::type_tuple;
+        template <class TypeTuple>
+        using concat = typename Concat<TypeTuple>::type_tuple;
 
-            template <class... AddTypes>
-            using add = concat<TypeTuple<AddTypes...>>;
+        template <class... AddTypes>
+        using add = concat<TypeTuple<AddTypes...>>;
 
-            template <size_t count>
-            using split = Split<count, Types...>;
+        template <size_t count>
+        using split = detail::Split<count, Types...>;
 
-            template <size_t index>
-            using remove = typename split<index>::new_tuple::template concat<typename split<index + 1>::remaining>;
+        template <size_t index>
+        using remove = typename split<index>::new_tuple::
+            template concat<
+                typename split<index + 1>::remaining>;
 
-            template <size_t index, class TypeTuple>
-            using insertt = typename split<index>::new_tuple::template concat<TypeTuple>::template concat<typename split<index>::remaining>;
+        template <size_t index, class TypeTuple>
+        using insertt = typename split<index>::new_tuple::
+            template concat<TypeTuple>::
+                template concat<
+                    typename split<index>::remaining>;
 
-            template <size_t index, class... InsertTypes>
-            using insert = insertt<index, TypeTuple<InsertTypes...>>;
+        template <size_t index, class... InsertTypes>
+        using insert = insertt<index, TypeTuple<InsertTypes...>>;
 
-            template <size_t index, template <class...> class Dumper = Dump>
-            using dump = typename split<index>::new_tuple::template concat<typename Dumper<gettype<index>>::type_tuple>::template concat<typename split<index + 1>::remaining>;
+        template <size_t index, template <class...> class Dumper = detail::Dump>
+        using dump = typename split<index>::new_tuple::
+            template concat<
+                typename Dumper<
+                    gettype<index>>::type_tuple>::
+                template concat<
+                    typename split<index + 1>::remaining>;
 
-            template <size_t index>
-            using dumpsafe = dump<index, DumpSafe>;
-            
-            template <size_t index>
-            using dumprec = dump<index, DumpSafeRecursive>;
+        template <size_t index>
+        using dumpsafe = dump<index, detail::DumpSafe>;
 
-            template <template <class...> class Dumper>
-            using foreachdump = typename DumpAll<TypeTuple<Types...>, Dumper>::new_tuple;
+        template <size_t index>
+        using dumprec = dump<index, detail::DumpSafeRecursive>;
 
-            using dumpall = foreachdump<DumpSafe>;
+        template <template <class...> class Dumper>
+        using foreachdump = typename detail::DumpAll<
+            TypeTuple<Types...>,
+            Dumper>::new_tuple;
 
-            using dumpallrec = foreachdump<DumpSafeRecursive>;
+        template <typename = void>
+        using dumpall = foreachdump<detail::DumpSafe>;
 
-        };
+        template <typename = void>
+        using dumpallrec = foreachdump<detail::DumpSafeRecursive>;
+    };
+
+    template <class... Types>
+    template <class... TupleTypes>
+    struct TypeTuple<Types...>::Concat<TypeTuple<TupleTypes...>>
+    {
+        using type_tuple = TypeTuple<Types..., TupleTypes...>;
+    };
+
+    template <>
+    struct TypeTuple<>
+    {
+#ifdef TEMPLUTIL_DEBUG_MODE
+        static std::string to_string()
+        {
+            return "()";
+        }
+#endif
+
+        template <class TypeTuple>
+        using concat = TypeTuple;
+    };
+
+    namespace detail
+    {
 
         template <template <class...> class Type, class... Types>
         struct Dump<Type<Types...>>
         {
+            template <class... TTypes>
+            using type       = Type<TTypes...>;
             using type_tuple = TypeTuple<Types...>;
         };
 
         template <class Type>
         auto check_dump()
-            -> decltype((void)reinterpret_cast<typename Dump<Type>::type_tuple*>((void*)0));
+            -> decltype((void)reinterpret_cast<
+                typename Dump<Type>::type_tuple*>(
+                (void*)0));
 
         template <class Type>
         struct DumpSafe<Type,
             decltype(check_dump<Type>())>
+            : public Dump<Type>
         {
-            using type_tuple = typename Dump<Type>::type_tuple;
         };
 
         template <class Type, typename>
         struct DumpSafe
         {
             using type_tuple = TypeTuple<Type>;
+            using type       = Type;
         };
 
         template <class Type>
         struct DumpSafeRecursive<Type,
             decltype(check_dump<Type>())>
         {
-            using type_tuple = typename Dump<Type>::type_tuple::template foreachdump<DumpSafeRecursive>;
+            using type_tuple = typename Dump<
+                Type>::type_tuple::template foreachdump<DumpSafeRecursive>;
         };
 
         template <class Type, typename>
-        struct DumpSafeRecursive
+        struct DumpSafeRecursive : public DumpSafe<Type>
         {
-            using type_tuple = TypeTuple<Type>;
         };
 
         template <class Tuple, template <class...> class Dumper>
         struct DumpAll<Tuple, Dumper, 0>
         {
-            using new_tuple = typename DumpSafe<typename Tuple::template gettype<0>>::type_tuple;
+            using new_tuple = typename DumpSafe<
+                typename Tuple::template gettype<0>>::type_tuple;
         };
 
         template <class Tuple, template <class...> class Dumper, size_t Last>
         struct DumpAll
         {
-            using new_tuple = typename DumpAll<Tuple, Dumper, Last - 1>::new_tuple::template concat<typename Dumper<typename Tuple::template gettype<Last>>::type_tuple>;
+            using new_tuple = typename DumpAll<Tuple,
+                Dumper,
+                Last - 1>::
+                new_tuple::template concat<
+                    typename Dumper<
+                        typename Tuple::template gettype<
+                            Last>>::type_tuple>;
         };
 
         template <class Type, class... Types>
@@ -209,13 +260,6 @@ namespace templ
             using remaining = TypeTuple<Types...>;
         };
 
-        template <class... Types>
-        template <class... TupleTypes>
-        struct TypeTuple<Types...>::Concat<TypeTuple<TupleTypes...>>
-        {
-            using type_tuple = TypeTuple<Types..., TupleTypes...>;
-        };
-
         template <size_t count, class Type, class... Types>
         struct Split
         {
@@ -224,20 +268,6 @@ namespace templ
             using _tuple2   = typename _smaller::new_tuple;
             using new_tuple = typename _tuple1::template concat<_tuple2>;
             using remaining = typename _smaller::remaining;
-        };
-
-        template <>
-        struct TypeTuple<>
-        {
-#ifdef TEMPLUTIL_DEBUG_MODE
-            static std::string to_string()
-            {
-                return "()";
-            }
-#endif
-
-            template <class TypeTuple>
-            using concat = TypeTuple;
         };
 
     }; // namespace detail
