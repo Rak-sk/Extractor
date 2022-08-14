@@ -1,5 +1,5 @@
 # Extractor
-Library which helps you extract variables from text.
+Header-only library which helps you extract variables from text.
 
 # Help
 The Extractor is currently in need of Extract type (variables which can be checked in extractor) and Modifier (addon patterns which augment Extractor's abilities) implemetentions.
