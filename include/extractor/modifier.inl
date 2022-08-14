@@ -1,18 +1,18 @@
 /**
  * @file modifier.inl
  * @author your name (you@domain.com)
- * 
- * @brief File with various patterns which can be checked 
+ *
+ * @brief File with various patterns which can be checked
  * for in extractor object. These are usualy more complex than
  * the ones in instruction.inl as thay may take another modifier with
  * its own specific pattern as template argument.
- * 
- * 
+ *
+ *
  * @version 0.1
  * @date 2022-08-13
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef EXTRACTOR_MODIFIER_INL
@@ -171,10 +171,10 @@ namespace extract
 
         inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
-            size_t result1 = extractor->test_for<Modifier1>();
+            size_t result1 = extractor->test_for<Modifier1>(offset);
             if (result1 == 0)
                 return 0;
-            size_t result2 = extractor->test_for<Modifier2>();
+            size_t result2 = extractor->test_for<Modifier2>(offset);
             if (result2 == 0)
                 return 0;
             return result1 + result2;
@@ -186,15 +186,35 @@ namespace extract
 #pragma region Unions
 
     template <class Modfier, size_t count1, size_t count2>
-    struct Union<More<Modfier, count1>, More<Modfier, count2>>
+    struct Union<More<Modfier, count1>,
+        More<Modfier, count2>,
+        void>
     {
         using join = More<Modfier, count1 + count2>;
     };
 
     template <class Modfier, size_t min1, size_t max1, size_t min2, size_t max2>
-    struct Union<FromTo<Modfier, min1, max1>, FromTo<Modfier, min2, max2>>
+    struct Union<FromTo<Modfier, min1, max1>,
+        FromTo<Modfier, min2, max2>,
+        void>
     {
         using join = FromTo<Modfier, min1 + min2, max1 + max2>;
+    };
+
+    template <class Modfier, size_t Min, size_t Max, size_t Count>
+    struct Union<FromTo<Modfier, Min, Max>,
+        More<Modfier, Count>,
+        typename std::enable_if<(Count >= Max)>::type>
+    {
+        using join = More<Modfier, Min + Count>;
+    };
+
+    template <class Modfier, size_t Min, size_t Max, size_t Count>
+    struct Union<FromTo<Modfier, Min, Max>,
+        More<Modfier, Count>,
+        typename std::enable_if<(Count < Max)>::type>
+    {
+        using join = FromTo<Modfier, Min + Count, Max - Count>;
     };
 
 #pragma endregion Unions

@@ -57,7 +57,7 @@ namespace extract
     template <Extract Type, Extract... Types>
     struct Any;
 
-    template <class Type1, class Type2>
+    template <class Type1, class Type2, typename = void>
     struct Union;
 
     template <class Type1, class Type2, typename = void>
