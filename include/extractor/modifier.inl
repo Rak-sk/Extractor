@@ -32,6 +32,11 @@ namespace extract
     struct More;
 
     template <class Modifier,
+        size_t Count,
+        typename = void>
+    struct Optional;
+
+    template <class Modifier,
         size_t MinCount,
         size_t MaxCount,
         typename = void>
@@ -82,6 +87,32 @@ namespace extract
         }
     };
 
+    template <class Modifier, size_t Count>
+    struct Optional<
+        Modifier,
+        Count,
+        typename std::enable_if<
+            is_modifier<
+                Modifier>::value>::type>
+    {
+        static_assert(Count != 0, "count may not be 0");
+        using modifier                = Modifier;
+        static constexpr size_t count = Count;
+
+        inline static size_t test_for(const Extractor* extractor, size_t offset)
+        {
+            size_t result = 0, end = extractor->remaining() - offset, temp_result;
+            for (size_t i = 0; i < count && result < end; i++) {
+                temp_result = extractor->test_for<Modifier>(offset + result);
+                if (temp_result == 0) {
+                    return result;
+                }
+                result += temp_result;
+            }
+            return result;
+        }
+    };
+
     template <class Modifier, size_t MinCount, size_t MaxCount>
     struct FromTo<Modifier,
         MinCount,
@@ -90,7 +121,7 @@ namespace extract
             is_modifier<
                 Modifier>::value>::type>
     {
-        static_assert(MinCount < MaxCount, "maximum count may not be smaller than minimum count");
+        static_assert(MinCount <= MaxCount, "maximum count may not be smaller than or equal to minimum count");
         using modifier                  = Modifier;
         static constexpr size_t minimum = MinCount;
         static constexpr size_t count   = MaxCount - MinCount;
