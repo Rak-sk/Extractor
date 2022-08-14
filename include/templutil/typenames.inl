@@ -46,6 +46,12 @@ namespace templ
 
         get_all_type_names(long double, "long double");
 
+        get_all_type_names(std::string, "std::string");
+
+        get_all_type_names(decltype(std::cout), "std::ostream");
+        
+        get_all_type_names(decltype(std::cin), "std::istream");
+
         template <class... Types>
         struct TypeName<TypeTuple<Types...>>
         {
