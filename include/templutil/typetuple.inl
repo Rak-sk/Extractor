@@ -38,23 +38,11 @@ namespace templ
         template <class Tuple, template <class...> class Dumper = DumpSafe, size_t Last = Tuple::count - 1>
         struct DumpAll;
 
-        template <class... Types>
-        struct CountTypes;
-
         template <size_t Count, class Type, class... Types>
         struct Split;
 
-        template <size_t index, class Type, class... Types>
-        struct GetType
-        {
-            using type = typename GetType<index - 1, Types...>::type;
-        };
-
-        template <class Type, class... Types>
-        struct GetType<0, Type, Types...>
-        {
-            using type = Type;
-        };
+        template <class... Types>
+        struct CountTypes;
 
         template <>
         struct CountTypes<>
@@ -72,6 +60,18 @@ namespace templ
         struct CountTypes<Type, Types...>
         {
             static constexpr size_t count = 1 + CountTypes<Types...>::count;
+        };
+
+        template <size_t index, class Type, class... Types>
+        struct GetType
+        {
+            using type = typename GetType<index - 1, Types...>::type;
+        };
+
+        template <class Type, class... Types>
+        struct GetType<0, Type, Types...>
+        {
+            using type = Type;
         };
 
 #ifdef TEMPLUTIL_DEBUG_MODE
@@ -181,6 +181,9 @@ namespace templ
 
         template <class TypeTuple>
         using concat = TypeTuple;
+
+        template <class... AddTypes>
+        using add = TypeTuple<AddTypes...>;
     };
 
     namespace detail
@@ -263,11 +266,10 @@ namespace templ
         template <size_t count, class Type, class... Types>
         struct Split
         {
-            using _smaller  = Split<count - 1, Types...>;
-            using _tuple1   = TypeTuple<Type>;
-            using _tuple2   = typename _smaller::new_tuple;
-            using new_tuple = typename _tuple1::template concat<_tuple2>;
-            using remaining = typename _smaller::remaining;
+            using new_tuple = typename TypeTuple<
+                Type>::template concat<typename Split<count - 1,
+                Types...>::new_tuple>;
+            using remaining = typename Split<count - 1, Types...>::remaining;
         };
 
     }; // namespace detail
