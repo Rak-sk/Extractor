@@ -2,6 +2,7 @@
 #define EXTRACTOR_CORE_H
 
 #include <cstddef>
+#include <utility>
 
 namespace extract
 {
@@ -123,11 +124,20 @@ namespace extract
      */
     struct View
     {
-        const char*  first;
+        const char* const first;
         const size_t size;
 
-        inline void operator=(const View& view)
+        inline View& operator=(View view)
         {
+            swap(*this, view);
+            return *this;
+        }
+
+        friend void swap(View& first, View& second) noexcept
+        {
+            using std::swap;
+            swap((const char*&)first.first, (const char*&)second.first);
+            swap((size_t&)first.size, (size_t&)second.size);
         }
 
         inline char operator[](size_t index) const
