@@ -149,7 +149,7 @@ namespace templ
         template <size_t index>
         using dumprec = dump<index, detail::DumpSafeRecursive>;
 
-        template <template <class...> class Dumper, template<class, template <class...> class, size_t> class DumperAll = detail::DumpAll>
+        template <template <class...> class Dumper, template <class, template <class...> class, size_t> class DumperAll = detail::DumpAll>
         using foreachdump = typename DumperAll<
             TypeTuple<Types...>,
             Dumper,
@@ -290,12 +290,11 @@ namespace templ
                 typename _smaller::
                     template remove<
                         _smaller::count - 1>::
-                        template concat
-                < typename Dumper<
-                    typename _smaller::
-                        template gettype<_smaller::count - 1>,
-                    typename Tuple::
-                        template gettype<Last>>::type_tuple>;
+                        template concat<typename Dumper<
+                            typename _smaller::
+                                template gettype<_smaller::count - 1>,
+                            typename Tuple::
+                                template gettype<Last>>::type_tuple>;
         };
 
         template <class Type, class... Types>

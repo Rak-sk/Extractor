@@ -12,11 +12,15 @@
         constexpr static const char* get() { return name; }; \
     };
 
-#define get_const_ptr_type_names(type, name)               \
-    get_one_type_name(type, name)                          \
-        get_one_type_name(const type, name " const")       \
-            get_one_type_name(const type*, name " const*") \
-                get_one_type_name(type*, name "*")
+#define get_const_ptr_type_names(type, name)                             \
+    get_one_type_name(type, name)                                        \
+        get_one_type_name(type&, name "&")                               \
+            get_one_type_name(const type, name " const")                 \
+                get_one_type_name(const type&, name " const&")           \
+                    get_one_type_name(const type*, name " const*")       \
+                        get_one_type_name(const type*&, name " const*&") \
+                            get_one_type_name(type*, name "*")           \
+                                get_one_type_name(type*&, name "*&")
 
 #define get_all_type_names(type, name)   \
     get_const_ptr_type_names(type, name) \
@@ -49,7 +53,7 @@ namespace templ
         get_all_type_names(std::string, "std::string");
 
         get_all_type_names(decltype(std::cout), "std::ostream");
-        
+
         get_all_type_names(decltype(std::cin), "std::istream");
 
         template <class... Types>

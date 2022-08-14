@@ -5,7 +5,7 @@ using namespace templ::detail;
 
 auto endl = '\n';
 
-template<size_t, class Type>
+template <size_t, class Type>
 struct Consumer
 {
     static void call()
@@ -24,7 +24,7 @@ int main(int argc, char const* argv[])
         << endl
 
         ; // ! End !
-    
+
     templ::TypeTuple<char, short, int, long>::foreach<Consumer>();
     return 0;
 }
