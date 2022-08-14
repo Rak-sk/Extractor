@@ -1,3 +1,20 @@
+/**
+ * @file modifier.inl
+ * @author your name (you@domain.com)
+ * 
+ * @brief File with various patterns which can be checked 
+ * for in extractor object. These are usualy more complex than
+ * the ones in instruction.inl as thay may take another modifier with
+ * its own specific pattern as template argument.
+ * 
+ * 
+ * @version 0.1
+ * @date 2022-08-13
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef EXTRACTOR_MODIFIER_INL
 #define EXTRACTOR_MODIFIER_INL
 
@@ -53,11 +70,11 @@ namespace extract
 
         inline static size_t test_for(const Extractor* extractor, size_t offset)
         {
-            size_t result = 0, end = extractor->remaining(), temp_result;
+            size_t result = 0, end = extractor->remaining() - offset, temp_result;
             for (size_t i = 0; i < count && result < end; i++) {
                 temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {
-                    return result;
+                    return 0;
                 }
                 result += temp_result;
             }
@@ -84,7 +101,7 @@ namespace extract
             if (result == 0) {
                 return 0;
             }
-            size_t temp_result, end = extractor->remaining();
+            size_t temp_result, end = extractor->remaining() - offset;
             for (size_t i = 0; i < count && result < end; i++) {
                 temp_result = extractor->test_for<Modifier>(offset + result);
                 if (temp_result == 0) {

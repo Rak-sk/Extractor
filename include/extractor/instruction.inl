@@ -1,9 +1,29 @@
+/**
+ * @file instruction.inl
+ * @author your name (you@domain.com)
+ * 
+ * @brief Implemantation of all possible extract types 
+ * which can be used in extractor 
+ * and small extract-type-related modifiers.
+ * 
+ * @version 0.1
+ * @date 2022-08-13
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ * 
+ */
+
 #ifndef EXTRACTOR_INSTRUCTION_INL
 #define EXTRACTOR_INSTRUCTION_INL
 
 #include "core.hpp"
 #include "extractor.hpp"
 
+/**
+ * @brief Region containing test_for-extract-type implementations
+ * most of them are self explanatory
+ */
 #pragma region Instructions
 
 namespace extract
@@ -109,8 +129,10 @@ namespace extract
 
 #pragma endregion Instructions
 
-#include "command.inl"
-
+/**
+ * @brief Region containing modifier implementations
+ * which use extract type as template parameter
+ */
 #pragma region Modifiers
 
 namespace extract

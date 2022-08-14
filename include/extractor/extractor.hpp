@@ -13,8 +13,6 @@ namespace extract
     {
 
     public:
-        // template<class Modifier, typename = void> friend class Command;
-
         Extractor(const char* text)
             : Checker(text)
         {
@@ -43,12 +41,26 @@ namespace extract
         template <Extract Type>
         size_t test_for(size_t offset = 0) const;
 
+        /**
+         * @brief Checks if character is present at current position.
+         *
+         * @tparam Character chracter to check for
+         * @return true
+         * @return false
+         */
         template <char Character>
         inline bool test_for() const
         {
             return Character == get_char();
         }
 
+        /**
+         * @brief Checks if any of the present can be found at current position.
+         *
+         * @tparam Characters chracters to check for
+         * @return true
+         * @return false
+         */
         template <char Character, char... Characters>
         inline bool test_for() const
         {
@@ -56,11 +68,11 @@ namespace extract
         }
 
         /**
-         * @brief
+         * @brief Test if special pattern or variable is in teh text.
          *
          * @tparam Modifier type which has method
-         * with exact signature "public: static size_t test_for(const
-         * Extractor*, size_t)""
+         * with exact signature "public: static size_t 
+         * test_for(const Extractor*, size_t)""
          * @param offset offset from current position
          * @return size_t
          */
@@ -140,6 +152,15 @@ namespace extract
             return size;
         }
 
+        /**
+         * @brief Gets a character or charcters from text
+         * specified by the extract type and moves.
+         *
+         * @tparam Type
+         * @param view reference where the result should be stored
+         * @return true
+         * @return false
+         */
         template <Extract Type>
         bool get_chars_move(string_view& view)
         {

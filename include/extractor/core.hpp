@@ -17,23 +17,42 @@ namespace extract
     template <class Modifier, typename = void>
     class Command;
 
+    /**
+     * @brief Variables which can be checked in Extractor
+     */
     enum class Extract
     {
+        // Checks for space, tabs and new lines
         whitespace,
+        // Checks only for spaces and tabs
         blank,
+        // 0-9
         digit,
+        // a-z and A-Z
         ascii_letter,
+        // a-z 
         ascii_small,
+        // A-Z
         ascii_capital,
+        // .,"'(){}/* etc.
         special,
+        // (char)0 - (char)31
         ascii_control,
         ascii,
+        // (char)0
         null
     };
 
+    /**
+     * @brief Checks if one of the present is in the string
+     */
     template <Extract Type>
     struct One;
 
+
+    /**
+     * @brief Checks if any of the present are in the string
+     */
     template <Extract Type, Extract... Types>
     struct Any;
 
@@ -98,6 +117,10 @@ namespace extract
     using joinbi = typename UnionBi<Type1, Type2>::join;
     
     
+    /**
+     * @brief Simple implementation of string view for c++11 and c++14
+     * 
+     */
     struct View
     {
         const char*  first;
