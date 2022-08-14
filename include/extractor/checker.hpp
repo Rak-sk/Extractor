@@ -3,12 +3,20 @@
 
 #include "core.hpp"
 
+#include <cstring>
+#include <stdexcept>
+
 namespace extract
 {
     class Checker
     {
     public:
-        Checker(const char* text);
+        Checker(const char* text)
+            : text(text)
+            , index(0)
+            , size(strlen(text))
+        {
+        }
 
         inline bool check_char(char character) const
         {
@@ -65,7 +73,20 @@ namespace extract
             return offset >= size ? '\0' : text[offset];
         }
 
-        void get_chars(char array[], size_t size) const;
+        void get_chars(char array[], size_t size) const
+        {
+            if (size > this->size - index)
+                throw std::out_of_range("String out of range");
+            strncat(array, text + index, size);
+        }
+
+        View get_chars(size_t count, size_t offset = 0) const
+        {
+            offset += index;
+            if (offset >= size)
+                return { nullptr, 0 };
+            return { text + offset, count + offset > size ? size - offset : count };
+        }
 
         size_t length() const
         {

@@ -6,7 +6,6 @@
 #include "../include/extractor/instruction.inl"
 #include "../include/extractor/modifier.inl"
 #include "../include/extractor/command.inl"
-#include "../extractor.cpp"
 
 static constexpr auto endl = '\n';
 
